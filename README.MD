@@ -1,148 +1,104 @@
-### Docker Build & Push Script
+
+---
+
+````markdown
+# Roboshop Docker
+
+This repository contains the Docker setup for a microservices-based e-commerce application called **Roboshop**. Each service is containerized and can be orchestrated using **Docker Compose**.
+
+---
+
+## 1. Microservices Included
+
+| Service     | Description |
+|-------------|-------------|
+| frontend    | Web UI (Nginx) |
+| cart        | Shopping cart service |
+| catalogue   | Product info service |
+| user        | User accounts & auth |
+| shipping    | Shipping management |
+| payment     | Payment processing |
+| mongodb     | DB for cart, catalogue, user |
+| mysql       | DB for shipping |
+
+---
+
+## 2. Run the Project (Docker Compose)
+
+### Prerequisites
+- Docker  
+- Docker Compose  
+
+### Steps
+```sh
+# Clone repo
+git clone https://github.com/gurunani/roboshop-docker.git
+cd roboshop-docker
+
+# Start all services
+docker-compose up -d
+
+# Check running containers
+docker-compose ps
+
+# Stop and remove all
+docker-compose down
+````
+
+---
+
+## 3. Useful Docker Commands
+
+| Command                        | Usage                   |
+| ------------------------------ | ----------------------- |
+| `docker build -t <name:tag> .` | Build image             |
+| `docker run <image>`           | Run container           |
+| `docker ps`                    | List running containers |
+| `docker stop <id>`             | Stop container          |
+| `docker images`                | List images             |
+| `docker rmi <id>`              | Remove image            |
+| `docker logs <id>`             | View logs               |
+| `docker push <image>`          | Push image to registry  |
+
+---
+
+## 4. Docker Volumes 
+
+```yaml
+services:
+  mongodb:
+    image: mongo
+    volumes:
+      - /data/mongodb:/data/db
+```
+
+---
+
+## 5. Docker Networking Types
+
+| Type             | Notes                                      |
+| ---------------- | ------------------------------------------ |
+| bridge (default) | Containers talk inside same network        |
+| host             | Shares host network (fast but less secure) |
+| none             | No network access                          |
+| overlay          | Multi-host networking (Docker Swarm)       |
+
+---
+
+## 6. Build & Push All Images 
 
 ```bash
 for i in $(ls -d */); do
   cd $i
   name=$(basename "$i")
-  docker build -t 9eguru/$name:v1 .
-  docker push 9eguru/$name:v1
-  cd ..
-done
-
-# Roboshop Docker
-
-This repository contains the Docker setup for a microservices-based e-commerce application named "Roboshop". Each service is containerized, and the entire application can be orchestrated using Docker Compose.
-
-## 1. Services
-
-The application is composed of the following microservices:
-
-* **frontend**: The main web interface (likely Nginx)
-* **cart**: Manages the shopping cart
-* **catalogue**: Provides product information
-* **user**: Handles user authentication and profiles
-* **shipping**: Manages shipping logistics
-* **payment**: Processes payments
-* **mongodb**: Database for services like cart, catalogue, and user
-* **mysql**: Database for services like shipping
-
-## 2. How to Run (Using Docker Compose)
-
-The entire application stack can be launched using the `docker-compose.yaml` file provided in the root of this repository.
-
-### Prerequisites
-
-* [Docker](https://docs.docker.com/get-docker/)
-* [Docker Compose](https://docs.docker.com/compose/install/)
-
-### Steps
-
-1.  **Clone the repository:**
-    ```sh
-    git clone [https://github.com/gurunani/roboshop-docker.git](https://github.com/gurunani/roboshop-docker.git)
-    cd roboshop-docker
-    ```
-
-2.  **Start all services:**
-    Run the following command to build the images (if not present) and start all the containers in detached mode.
-    ```sh
-    docker-compose up -d
-    ```
-
-3.  **Check running containers:**
-    You can see all the running services with:
-    ```sh
-    docker-compose ps
-    ```
-
-4.  **Stop all services:**
-    To stop and remove all the containers, networks, and volumes, run:
-    ```sh
-    docker-compose down
-    ```
-
----
-
-## 3. Basic Docker Concepts (Notes)
-
-This section covers fundamental Docker topics relevant to this project.
-
-### Important Docker Commands
-
-Here are some of the most common Docker commands for managing containers and images.
-
-| Command | Description |
-| :--- | :--- |
-| `docker build -t <name:tag> .` | Build a Docker image from a `Dockerfile` in the current directory. |
-| `docker run [OPTIONS] <image>` | Create and start a new container from an image. |
-| `docker ps` | List all running containers. |
-| `docker ps -a` | List all containers (running and stopped). |
-| `docker stop <container_id|name>` | Stop one or more running containers. |
-| `docker rm <container_id|name>` | Remove one or more stopped containers. |
-| `docker images` | List all locally available images. |
-| `docker rmi <image_id|name>` | Remove one or more images. |
-| `docker pull <image_name:tag>` | Download an image from a registry (like Docker Hub). |
-| `docker push <image_name:tag>` | Upload an image to a registry. |
-| `docker logs <container_id|name>` | Fetch the logs of a container. |
-
-### Docker Volumes
-
-**What are Volumes?**
-Volumes are the preferred way to **persist data** generated by and used by Docker containers. When a container is stopped and removed, its internal filesystem is also deleted. Volumes are managed by Docker and exist on the host machine, separate from the container's lifecycle.
-
-* **Why use them?** To save database files, user uploads, log files, or any other data that should not be lost when the container is removed.
-* **Example (in Docker Compose):**
-    ```yaml
-    services:
-      mongodb:
-        image: mongo
-        volumes:
-          - /data/mongodb:/data/db
-    ```
-    This maps the `/data/db` directory *inside* the container to the `/data/mongodb` directory on the *host machine*.
-
-### Docker Networking
-
-Docker containers need to communicate with each other and the outside world. Docker provides several networking drivers for this.
-
-* **Bridge (Default):**
-    * This is the default network containers are attached to if you don't specify one.
-    * Containers on the same bridge network can communicate with each other using their internal IP addresses or container names.
-    * Docker Compose automatically creates a custom bridge network for all services in a `docker-compose.yaml` file, which is why our services (e.g., `frontend`, `cart`) can find each other using their service names.
-
-* **Host:**
-    * The container shares the host's networking namespace.
-    * If you run a web server on port 80 in the container, it's immediately accessible on the host's port 80.
-    * **Pro:** High performance (no network address translation).
-    * **Con:** Less secure, as the container has access to the host's network interfaces.
-
-* **None:**
-    * The container is completely isolated from any network. It has no network interface.
-    * Useful for running secure, isolated tasks or batch jobs that don't need network access.
-
-* **Overlay:**
-    * Used for communication between containers running on **different Docker hosts**.
-    * This is the network type used by Docker Swarm for multi-host container orchestration.
-
----
-
-## 4. Building & Pushing Individual Images
-
-If you need to build and push each service's Docker image to a container registry individually, you can use a script similar to the one below. (This script assumes a registry prefix of `9eguru` and a tag of `v1`).
-
-```sh
-# Loop through each service directory
-for i in $(ls -d */); do
-  cd $i
-  name=$(basename "$i")
-  
-  # Build the image
   echo "Building $name:v1..."
   docker build -t 9eguru/$name:v1 .
-  
-  # Push the image
   echo "Pushing $name:v1..."
   docker push 9eguru/$name:v1
-  
   cd ..
 done
+```
+
+---
+
+
