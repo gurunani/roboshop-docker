@@ -99,6 +99,204 @@ for i in $(ls -d */); do
 done
 ```
 
+Got it — you want **everything**:
+✅ Table
+✅ Bullet list version
+✅ Examples/snippets
+✅ Collapsible sections (`<details>` style)
+✅ Still clean and README-friendly
+
+Here is the **complete `.md` block** you can paste directly:
+
+````markdown
+## 8. Docker Best Practices (Important)
+
+### 📌 Summary Table
+
+| Practice | Why It Matters |
+|----------|----------------|
+| Minimum & Official Images | Smaller, safer, verified base images |
+| Multi-Stage Builds | Build once, ship lightweight runtime image |
+| Optimising Layers | Combine RUN lines → faster + smaller images |
+| Non-Root Containers | Prevents privilege escalations |
+| Custom Docker Networks | Service discovery + isolation |
+| Implementing Volumes | Data survives container deletion |
+| COPY over ADD | COPY is safer and predictable |
+| .dockerignore | Prevents bloated image builds |
+| Health Checks | Auto-restart unhealthy containers |
+| Limiting Resources | Stops containers from hogging CPU/RAM |
+| Secrets Manager | No passwords inside images or env files |
+| Volumes (Again) | Required for DBs, logs, uploads |
+
 ---
+
+### 🔹 Bullet Version (Quick Notes)
+
+- Use **official & minimal images** like `alpine`, `debian:slim`
+- Build production images using **multi-stage builds**
+- **Combine RUN instructions** to reduce layers
+- Always run apps as a **non-root user**
+- Use **custom networks** for microservices
+- Use **volumes** for DBs, logs, uploads
+- Prefer `COPY` instead of `ADD`
+- Add a `.dockerignore` to skip junk files during build
+- Add **HEALTHCHECK** so Docker knows when app is broken
+- Limit CPU & RAM using `--cpus` and `--memory`
+- Store passwords & keys in **cloud secret managers**, not ENV
+- Re-mention: volumes are **mandatory** for stateful containers
+
+---
+
+### 🔍 Expanded (With Examples)
+
+<details>
+<summary><b>1. Minimum & Official Base Images</b></summary>
+
+```dockerfile
+FROM python:3.12-slim   # ✅ small, official, secure
+# instead of: FROM ubuntu:latest  # ❌ huge, unnecessary
+````
+
+</details>
+
+<details>
+<summary><b>2. Multi-Stage Builds</b></summary>
+
+```dockerfile
+FROM golang:1.21 as builder
+WORKDIR /app
+RUN go build -o app main.go
+
+FROM alpine
+COPY --from=builder /app/app /app
+CMD ["/app"]
+```
+
+✅ Final image ~10MB instead of 800MB
+
+</details>
+
+<details>
+<summary><b>3. Optimising Layers</b></summary>
+
+```dockerfile
+# Bad (creates 3 layers)
+RUN apt update
+RUN apt install -y curl
+RUN apt clean
+
+# Good (1 layer)
+RUN apt update && apt install -y curl && apt clean
+```
+
+</details>
+
+<details>
+<summary><b>4. Non-Root Containers</b></summary>
+
+```dockerfile
+RUN adduser -D appuser
+USER appuser
+```
+
+</details>
+
+<details>
+<summary><b>5. Custom Docker Networks</b></summary>
+
+```sh
+docker network create roboshop
+docker run --network=roboshop cart
+docker run --network=roboshop user
+```
+
+</details>
+
+<details>
+<summary><b>6. Implementing Volumes</b></summary>
+
+```yaml
+services:
+  mongodb:
+    image: mongo
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:
+```
+
+</details>
+
+<details>
+<summary><b>7. COPY over ADD</b></summary>
+
+```dockerfile
+COPY app.py /app/  # ✅
+ADD app.py /app/   # ❌ same result, no need for ADD
+```
+
+</details>
+
+<details>
+<summary><b>8. .dockerignore</b></summary>
+
+```
+.git
+node_modules
+*.log
+.env
+```
+
+⏳ Speeds up builds, avoids bloated images
+
+</details>
+
+<details>
+<summary><b>9. Health Checks</b></summary>
+
+```dockerfile
+HEALTHCHECK CMD curl -f http://localhost:8080/health || exit 1
+```
+
+</details>
+
+<details>
+<summary><b>10. Limiting Resources</b></summary>
+
+```sh
+docker run --cpus=1 --memory=512m app
+```
+
+</details>
+
+<details>
+<summary><b>11. Secrets from Secrets Manager</b></summary>
+
+✅ Use AWS Secrets Manager, Vault, GCP Secret Manager
+❌ Never commit `.env` with passwords
+
+Example (AWS CLI):
+
+```sh
+aws secretsmanager get-secret-value --secret-id db_password
+```
+
+</details>
+
+<details>
+<summary><b>12. Volumes (Reminder)</b></summary>
+
+Containers are **temporary**. Data is **not**.
+
+No volume = data gone after `docker rm`
+
+</details>
+
+---
+
+```
+
+
 
 
