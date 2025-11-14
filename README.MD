@@ -293,45 +293,4 @@ No volume = data gone after `docker rm`
 
 </details>
 
----
-
-```
-
-
-## 1. Minimum & Official Images
-Use the smallest official base images (`alpine`, `slim`) to reduce image size and improve security.
-
-## 2. Multi-Stage Builds
-Build dependencies in one stage and copy only the required output into a lightweight runtime stage.
-
-## 3. Optimizing Layers / Combining RUN
-Each instruction creates a layer. Combine `RUN` commands to reduce layers and shrink the final image.
-
-## 4. Non-Root Containers
-Run your container as a normal (non-root) user to improve security and avoid privilege issues.
-
-## 5. Customised Networks
-Use custom Docker networks so containers communicate privately and securely.
-
-## 6. Implementing Volumes
-Store important data in volumes so it persists even if the container stops or is removed.
-
-## 7. COPY Over ADD
-Use `COPY` for simple file transfers. Avoid `ADD` unless you need its special features (like auto-extract).
-
-## 8. .dockerignore
-Ignore unnecessary files (logs, node_modules, secrets) during build to reduce context size and prevent leaks.
-
-## 9. Implementing Health Checks
-Use `HEALTHCHECK` to let Docker detect broken containers and restart them automatically.
-
-## 10. Limiting Resources
-Set CPU and memory limits so no single container can overload the host.
-
-## 11. Getting Secrets from Secrets Manager
-Never hardcode secrets in images. Fetch them at runtime from a secrets manager (AWS, Vault, Docker secrets).
-
----
-
-
 
